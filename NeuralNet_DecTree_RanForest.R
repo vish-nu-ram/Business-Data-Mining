@@ -1,5 +1,5 @@
 library(readxl)
-install.packages("varhandle")
+#install.packages("varhandle")
 library(varhandle)
 library(caret)
 library(neuralnet)
@@ -105,6 +105,7 @@ valid.pred <- valid.pred$net.result[,1]
 # convert probabilities to classes
 valid.class <- (1* (valid.pred>0.5))
 # confusion matrix 
+valid_norm['y']<- valid_df$y
 confusionMatrix(factor(valid.class), factor(valid_norm$y), positive = "1")
 
 #On a balanced validation set
@@ -132,8 +133,8 @@ confusionMatrix(factor(valid.class), factor(new_data_valid$y), positive = "1")
 
 ############################## Random forest #############
 
-install.packages("randomForest")
-install.packages("Boruta")
+#install.packages("randomForest")
+#install.packages("Boruta")
 library(randomForest)
 library(Boruta)
 
@@ -158,30 +159,24 @@ print(model_RF)
 p1_RF <- predict(model_RF,new_data)
 confusionMatrix(p1_RF,new_data$y)
 
-p2_RF <- predict(model_RF,valid_df)
-confusionMatrix(p2_RF,valid_df$y)
+p2_RF <- predict(model_RF,valid_norm)
+confusionMatrix(p2_RF,valid_norm$y)
 
-confMatrix_1_RF <- table(Predicted=p1_RF,Actual=train_df$y)
-w_RF1 = sum(diag(confMatrix_1_RF ))/nrow(train_df)
+#confMatrix_1_RF <- table(Predicted=p1_RF,Actual=train_df$y)
+#w_RF1 = sum(diag(confMatrix_1_RF ))/nrow(train_df)
 
-confMatrix_2_RF <- table(Predicted=p2_RF,Actual=valid_df$y)
-w_RF2 = sum(diag(confMatrix_2_RF ))/nrow(valid_df)
+#confMatrix_2_RF <- table(Predicted=p2_RF,Actual=valid_norm$y)
+#w_RF2 = sum(diag(confMatrix_2_RF ))/nrow(valid_norm)
 
 
-rocPlot(trainData,as.numeric(p1_RF),'RF')
-
-accuracyFunction <- function(conMat){
-  print(paste('The overall accuracy is',round(sum(diag(conMat))/sum(conMat)),2))
-  print()
-}
-
+#rocPlot(trainData,as.numeric(p1_RF),'RF')
 
 
 ############## Tree ##############
 library(e1071)
-install.packages("party")
+#install.packages("party")
 library(party)
-install.packages("ROCR")
+#install.packages("ROCR")
 library(ROCR)
 library(pROC)
 
@@ -190,11 +185,13 @@ plot(model_tree)
 
 p1_Tree <- predict(model_tree,new_data,type = 'response')
 confMatrix_1_Tree <- table(p1_Tree,new_data$y)
+confMatrix_1_Tree
 sum(diag(confMatrix_1_Tree))/nrow(new_data)
 w_Tree1 = sum(diag(confMatrix_1_Tree))/nrow(new_data)
 
-p2_Tree <- predict(model_tree,valid_df,type = 'response')
+p2_Tree <- predict(model_tree,valid_norm,type = 'response')
 confMatrix_2_Tree <- table(p2_Tree,valid_df$y)
+confMatrix_2_Tree 
 w_Tree2 = sum(diag(confMatrix_2_Tree))/nrow(valid_df)
 
 
