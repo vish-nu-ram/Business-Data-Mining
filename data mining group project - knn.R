@@ -32,30 +32,33 @@ test_index = setdiff(row.names(dm_new), c(train_index, valid_index))
 train_df = dm_new[train_index,]
 valid_df = dm_new[valid_index,]
 test_df = dm_new[test_index,]
+View(train_df)
+
 
 #normalizing the data
-train_norm_df = train_df[,-c(2,3,5,6,8,12,13)]
-valid_norm_df = valid_df[,-c(2,3,5,6,8,12,13)]
-test_norm_df = test_df[,-c(2,3,5,6,8,12,13)]
+#train_norm_df = train_df[,-c(2,3,5,6,8,12,13)]
+#valid_norm_df = valid_df[,-c(2,3,5,6,8,12,13)]
+#test_norm_df = test_df[,-c(2,3,5,6,8,12,13)]
 
 norm_values = preProcess(train_norm_df, method=c("center", "scale"))
-train_norm_df_new = predict(norm_values, train_norm_df)
-valid_norm_df_new = predict(norm_values, valid_norm_df)
-test_norm_df_new = predict(norm_values, test_norm_df)
+train_norm_df_new = predict(norm_values, train_df)
+valid_norm_df_new = predict(norm_values, valid_df)
+test_norm_df_new = predict(norm_values, test_df)
 
 length(train_norm_df_new)
 
 ##############################################################
 ##Under sampling to balance the data
 
-train_norm_y <- which(train_df$y == 1)
-train_norm_n <- which(train_df$y == 0)
+y_values <- which(train_df$y == 1)
+n_values <- which(train_df$y == 2)
 
 b = length(train_norm_y)
-pick_y <- sample(train_norm_y, b)
-pick_n = sample(train_norm_n, b)
 
-new_data <- train_norm[c(pick_y, pick_n), ]
+pick_y <- sample(y_values, b)
+pick_n <- sample(n_values, b)
+
+new_data <- train_norm_df_new[c(pick_y, pick_n), ]
 
 summary(new_data)
 ##############################################################
@@ -63,9 +66,9 @@ summary(new_data)
 # optimal k
 accuracy.df = data.frame(k = seq(1, 30, 1), overallaccurace = rep(0, 30))
 for(i in 1:30) {
-  knn_pred = class::knn(train = train_norm_df_new, 
+  knn_pred = class::knn(train = new_data, 
                          test = valid_norm_df_new, 
-                         cl = train_df$y, k = i)
+                         cl = new_data$y, k = i)
   accuracy.df[i, 2] <- confusionMatrix(knn_pred, 
                                        as.factor(valid_df$y))$overall[1]
 }
@@ -73,20 +76,20 @@ for(i in 1:30) {
 which(accuracy.df[,2] == max(accuracy.df[,2])) 
 
 accuracy.df   
-#k =19 gives the best results
+#k =3 gives the best results
 
-#knn with k = 19
+#knn with k = 3
 knn_pred_1 = class::knn(train = train_norm_df_new, 
                          test = valid_norm_df_new, 
-                         cl = train_df$y, k = 19)
+                         cl = train_df$y, k = 3)
 confusionMatrix(knn_pred_1, as.factor(valid_df$y), positive = "1")
 
 #cm = as.matrix(table(Actual = train_norm_df_new, Predicted = knn_pred_1))
 
-# prediction of test set with k = 19
+# prediction of test set with k = 3
 knn_pred_test <- class::knn(train = train_norm_df_new, 
                        test = test_norm_df_new, 
-                       cl = train_df$y, k = 19)
+                       cl = train_df$y, k = 3)
 
 knn_pred_test
 
